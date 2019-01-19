@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.AttendanceDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="att_column">
+        star_time,end_time,user_id,is_late,is_leave,is_nowork,note
+    </sql>
+    <!-- 添加考勤 -->
+    <insert id="addAttd" parameterType="Attendance">
+        insert into attendance (<include refid="att_column"/>) values(#{starTime},#{endTime},#{userId},
+        #{isLate},#{isLeave},#{isNowork},#{note})
+    </insert>
+    <!-- 修改考勤 -->
+    <update id="updateAttd" parameterType="Attendance">
+        update attendance set star_time=#{starTime},end_time=#{endTime},user_id=#{userId},
+        is_late=#{isLate},is_leave=#{isLeave},is_nowork=#{isNowork},note=#{note} where att_id=#{attId}
+    </update>
+    <!-- 通过id查询-->
+    <select id="queryAttById" parameterType="int" resultType="Attendance">
+        select att_id,<include refid="att_column"></include> from attendance where  att_id=#{attId}
+    </select>
+    <select id="queryAllAtt" resultMap="AttendanceMap">
+        select att_id,<include refid="att_column"></include> from attendance
+    </select>
+    <select id="queryAllAttByUserId" resultMap="AttendanceMap">
+        select att_id,<include refid="att_column"></include> from attendance where user_id=#{arg0}
+    </select>
+    <resultMap id="AttendanceMap" type="Attendance"/>
+    <!--&lt;!&ndash; 查询所有公司信息 &ndash;&gt;-->
+    <!--<select id="queryCompany" resultMap="companyMap">-->
+        <!--select *  from company-->
+    <!--</select>-->
+    <!--<resultMap id="companyMap" type="Company">-->
+        <!--<id property="comId" column="com_id"/>-->
+        <!--<result property="email" column="email"/>-->
+        <!--<result property="phone" column="phone"/>-->
+        <!--<result property="address" column="address"/>-->
+        <!--<result property="legalPerson" column="legal_person"/>-->
+        <!--<result property="comMsg" column="com_msg"/>-->
+        <!--<result property="comName" column="com_name"/>-->
+        <!--<result property="cTime" column="c_time"/>-->
+        <!--<result property="uTime" column="u_time"/>-->
+        <!--&lt;!&ndash;一对多&ndash;&gt;-->
+        <!--<collection property="depts" ofType="Department" column="com_id" select="com.dao.DepartmentDao.queryAllDeptByComId"/>-->
+    <!--</resultMap>-->
+
+
+</mapper>

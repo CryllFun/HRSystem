@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.DepartmentDao">
+<!-- 二级缓存 -->
+<!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+<cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+<sql id="dept_column">
+    dept_name,com_id,dept_desc
+</sql>
+    <!--删除部门信息-->
+    <delete id="deleteDept" parameterType="int">
+        delete from department where dept_id=#{deptId}
+    </delete>
+<!-- 修改部门信息 -->
+<update id="updateDept" parameterType="Department">
+    update department set dept_name=#{deptName},com_id=#{comId},u_time=#{uTime},dept_desc=#{deptDesc} where dept_id=#{deptId}
+</update>
+<!-- 通过id查询部门信息 -->
+<select id="queryDeptById" parameterType="int" resultMap="deptMap">
+    select dept_id, <include refid="dept_column"/>,c_time,u_time from department where dept_id=#{deptId}
+</select>
+<!-- 查询所有部门信息 -->
+<select id="queryAllDeptByComId"  resultMap="deptMap">
+    select dept_id, <include refid="dept_column"/>,c_time,u_time from department where com_id=#{arg0}
+</select>
+<resultMap id="deptMap" type="Department">
+    <id property="deptId" column="dept_id"/>
+    <result property="deptName" column="dept_name"/>
+    <result property="comId" column="com_id"/>
+    <result property="cTime" column="c_time"/>
+    <result property="uTime" column="u_time"/>
+    <collection property="users" ofType="User" column="dept_id" select="com.dao.UserDao.queryUserByDeptId"/>
+    <!--一对多-->
+    <collection property="positions" ofType="Position" column="dept_id" select="com.dao.PositionDao.queryAllPstByDeptId"/>
+</resultMap>
+<!-- 添加部门信息 -->
+<insert id="addDept" parameterType="Department">
+    insert into department (<include refid="dept_column"/>,c_time) values(#{deptName},#{comId},#{deptDesc},#{cTime})
+</insert>
+
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.RewardPuniDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <sql id="rp_column">
+        user_id,reward_puni,reson,`time`,money
+    </sql>
+    <delete id="deleteRePu">
+        delete from rew_puni where repu_id=#{arg0}
+    </delete>
+    <!-- 添加奖惩 -->
+    <insert id="addRewardPuni" parameterType="RewardPuni">
+        insert into rew_puni (<include refid="rp_column"/>) values(#{userId},#{rewardPuni},#{reson},
+        #{time},#{money})
+    </insert>
+    <!-- 修改奖惩 -->
+    <update id="updateRewardPuni" parameterType="RewardPuni">
+        update rew_puni set user_id=#{userId},reward_puni=#{rewardPuni},reson=#{reson}
+        ,`time`=#{time},money=#{money} where repu_id=#{repuId}
+    </update>
+    <!-- 通过id查询-->
+    <select id="queryRewardPuniById" parameterType="int" resultType="RewardPuni">
+        select repu_id,<include refid="rp_column"></include> from rew_puni where  repu_id=#{repuId}
+    </select>
+    <select id="queryAllRewardPuni" resultMap="RewardPuniMap">
+        select repu_id,<include refid="rp_column"></include> from rew_puni
+    </select>
+    <select id="queryRewardPuniByUserId" resultMap="RewardPuniMap">
+        select repu_id,<include refid="rp_column"></include> from rew_puni where user_id=#{arg0}
+    </select>
+    <resultMap id="RewardPuniMap" type="RewardPuni"/>
+    <!--&lt;!&ndash; 查询所有公司信息 &ndash;&gt;-->
+    <!--<select id="queryCompany" resultMap="companyMap">-->
+        <!--select *  from company-->
+    <!--</select>-->
+    <!--<resultMap id="companyMap" type="Company">-->
+        <!--<id property="comId" column="com_id"/>-->
+        <!--<result property="email" column="email"/>-->
+        <!--<result property="phone" column="phone"/>-->
+        <!--<result property="address" column="address"/>-->
+        <!--<result property="legalPerson" column="legal_person"/>-->
+        <!--<result property="comMsg" column="com_msg"/>-->
+        <!--<result property="comName" column="com_name"/>-->
+        <!--<result property="cTime" column="c_time"/>-->
+        <!--<result property="uTime" column="u_time"/>-->
+        <!--&lt;!&ndash;一对多&ndash;&gt;-->
+        <!--<collection property="depts" ofType="Department" column="com_id" select="com.dao.DepartmentDao.queryAllDeptByComId"/>-->
+    <!--</resultMap>-->
+
+
+</mapper>

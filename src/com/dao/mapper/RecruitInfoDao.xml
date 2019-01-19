@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.RecruitInfoDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="info_column">
+        com_id,dept_id,pst_id,salary,functions,requests
+    </sql>
+    <!--删除部门信息-->
+    <delete id="deleteInfo" parameterType="int">
+        delete from recruitinfo where info_id=#{infoId}
+    </delete>
+    <!-- 修改招聘信息 -->
+    <update id="updateRecruitinfo" parameterType="Recruitinfo">
+        update recruitinfo set pst_id=#{pstId},dept_id=#{deptId},com_id=#{comId},u_time=#{uTime},salary=#{salary},functions=#{functions},requests=#{requests} where info_id=#{infoId}
+    </update>
+    <!-- 添加招聘信息 -->
+    <insert id="addInfo" parameterType="Recruitinfo">
+        insert into recruitinfo (<include refid="info_column"/>,c_time) values(#{comId},#{deptId},#{pstId},#{salary},#{functions},#{requests},#{cTime})
+    </insert>
+    <!-- 查询所有的招聘信息 -->
+    <select id="queryAllInfo" resultMap="recruitInfoMap">
+        select * from recruitinfo r,company c,department d,`position` p where r.com_id=c.com_id and r.dept_id=d.dept_id and r.pst_id=p.pst_id
+    </select>
+    <resultMap id="recruitInfoMap" type="recruitInfo">
+        <id property="infoId" column="info_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="pstId" column="pst_id"/>
+        <result property="comId" column="com_id"/>
+        <result property="comName" column="com_name"/>
+        <result property="comMsg" column="com_msg"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="pstName" column="pst_name"/>
+        <result property="salary" column="salary"/>
+        <result property="cTime" column="c_time"/>
+        <result property="uTime" column="u_time"/>
+        <result property="functions"  column="functions" />
+        <result property="requests" column="requests"/>
+    </resultMap>
+    <!--通过id查招聘-->
+    <select id="queryInfoById" resultType="RecruitInfo">
+        select * from recruitinfo r,company c,department d,`position` p where r.com_id=c.com_id and r.dept_id=d.dept_id and r.pst_id=p.pst_id and info_id=#{arg0}
+    </select>
+</mapper>

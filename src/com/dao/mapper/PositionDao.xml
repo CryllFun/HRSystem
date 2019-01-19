@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.PositionDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="pst_column">
+        pst_name,dept_id,pst_desc
+    </sql>
+    <!--增加职位-->
+    <insert id="addPosition" parameterType="Position">
+        insert into `position` (pst_name,dept_id,c_time,pst_desc) values(#{pstName},#{deptId},#{cTime},#{pstDesc})
+    </insert>
+    <!--删除部门信息-->
+    <delete id="deletePst" parameterType="int">
+        delete from `position` where pst_id=#{pstId}
+    </delete>
+    <!-- 修改职位信息 -->
+    <update id="updatePst" parameterType="Position">
+        update `position` set pst_name=#{pstName},dept_id=#{deptId},u_time=#{uTime},pst_desc=#{pstDesc} where pst_id=#{pstId}
+    </update>
+    <!-- 通过id查询职位信息 -->
+    <select id="queryPstById" parameterType="int" resultMap="pstMap">
+        select pst_id, <include refid="pst_column"/> from `position` where pst_id=#{pstId}
+    </select>
+    <!-- 查询所有职位信息 -->
+    <select id="queryAllPstByDeptId"  resultMap="pstMap">
+        select pst_id, <include refid="pst_column"/>,c_time,u_time from `position` where dept_id=#{arg0}
+    </select>
+    <resultMap id="pstMap" type="Position">
+        <id property="pstId" column="pst_id"/>
+        <result property="pstName" column="pst_name"/>
+        <result property="pstDesc" column="pst_desc"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="cTime" column="c_time"/>
+        <result property="uTime" column="u_time"/>
+        <!--一对多-->
+        <collection property="users" ofType="User" column="pst_id" select="com.dao.UserDao.queryUserByPstId"/>
+    </resultMap>
+
+</mapper>

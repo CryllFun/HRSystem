@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UserDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="user_column">
+        user_id,`identity`,`name`,psw,phone,email,u.dept_id,d.dept_name,u.pst_id,p.pst_name,
+        age,sex,record,school,major,edut_time,in_time,create_time,update_time,basic_sal,status,note
+    </sql>
+    <!--删除用户信息-->
+    <delete id="deleteUser" parameterType="int">
+        delete from user where user_id=#{userId}
+    </delete>
+    <!-- 修改用户信息 -->
+    <update id="updateUser" parameterType="User">
+        update user set `identity`=#{identity},`name`=#{name}, phone=#{phone},email=#{email},update_time=#{updateTime},dept_id=#{deptId},
+        pst_id=#{pstId},age=#{age},sex=#{sex},record=#{record},school=#{school},
+        major=#{major},edut_time=#{edutTime},in_time=#{inTime},basic_sal=#{basicSal},status=#{status},note=#{note} where user_id=#{userId}
+    </update>
+    <!-- 登录 -->
+    <select id="queryUserWhileLogin" parameterType="User" resultType="User">
+        select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and u.name=#{name} and u.psw=#{psw}
+    </select>
+    <!--通过部门id查用户-->
+    <select id="queryUserByDeptId" resultMap="userMap">
+        select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and u.dept_id=#{arg0} and `identity`=2
+    </select>
+    <!-- 注册 -->
+    <insert id="addUser" parameterType="User">
+        insert into user (`name`,psw,phone,email,dept_id,pst_id,`identity`,
+        age,sex,record,school,major,edut_time,in_time,create_time,update_time,basic_sal,status,note)
+        values(#{name},#{psw},#{phone},#{email},#{deptId},#{pstId},#{identity},#{age},
+        #{sex},#{record},#{school},#{major},#{edutTime},#{inTime},#{createTime},#{updateTime},#{basicSal},#{status},#{note})
+    </insert>
+    <!-- 注册同名验证 -->
+    <select id="queryUserByName" resultType="User">
+        select * from user where `name`=#{param1}
+    </select>
+    <!--通过职位id查用户-->
+    <select id="queryUserByPstId" resultMap="userMap">
+        select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.pst_id=#{arg0} and `identity`=2
+    </select>
+    <resultMap id="userMap" type="User"/>
+    <!--通过用户id查询-->
+    <select id="queryUserByuId" resultType="User">
+        select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.user_id=#{arg0}
+    </select>
+</mapper>
+

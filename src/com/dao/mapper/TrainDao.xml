@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.TrainDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="tr_column">
+        tr_id,tr_name,tr_content,star_time,end_time,cre_time,upd_time
+    </sql>
+    <!--删除培训信息-->
+    <delete id="deleteTrain" parameterType="int">
+        delete from train where tr_id=#{trId}
+    </delete>
+    <!-- 修改培训信息 -->
+    <update id="updateTrain" parameterType="Train">
+        update train set tr_name=#{trName},tr_content=#{trContent},star_time=#{starTime},
+        end_time=#{endTime},upd_time=#{updTime} where tr_id=#{trId}
+    </update>
+    <!-- 查询单个培训信息 -->
+    <select id="queryTrainById" resultType="Train">
+        select  <include refid="tr_column"></include> from train where tr_id=#{arg0}
+    </select>
+    <!--查询所有培训信息-->
+    <select id="queryAllTrain" resultMap="trainMap">
+        select  <include refid="tr_column"></include> from train
+    </select>
+    <!-- 添加培训信息 -->
+    <insert id="addTrain" parameterType="Train">
+        insert into train (tr_name,tr_content,star_time,end_time,cre_time)
+        values(#{trName},#{trContent},#{starTime},#{endTime},#{creTime})
+    </insert>
+    <!-- 注册同名验证 -->
+    <!--<select id="queryUserByName" resultType="User">-->
+        <!--select * from user where u_name=#{param1}-->
+    <!--</select>-->
+    <!--&lt;!&ndash;通过职位id查用户&ndash;&gt;-->
+    <!--<select id="queryUserByPstId" resultMap="userMap">-->
+        <!--select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.pst_id=#{arg0}-->
+    <!--</select>-->
+    <resultMap id="trainMap" type="Train"/>
+    <!--通过用户id查询-->
+    <!--<select id="queryUserByuId" resultType="User">-->
+        <!--select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.user_id=#{arg0}-->
+    <!--</select>-->
+</mapper>
+

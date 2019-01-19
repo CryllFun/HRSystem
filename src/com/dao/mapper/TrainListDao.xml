@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.TrainListDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="trl_column">
+        trl_id,tr_id,dept_id,user_id
+    </sql>
+    <!--删除某条培训-->
+    <delete id="deleteTrainListById" parameterType="int">
+        delete from train_list where trl_id=#{trlId}
+    </delete>
+    <!--有人参加培训-->
+    <insert id="addTrainList">
+        insert into train_list (tr_id,dept_id,user_id)
+        values(#{arg0},#{arg1},#{arg2})
+    </insert>
+    <!--删除某个人所有的培训-->
+    <delete id="deleteTrainOfUser" parameterType="int">
+        delete from train_list where user_id=#{userId}
+    </delete>
+    <!--删除某个人的某个培训-->
+    <delete id="deleteOneTrainOfUser">
+        delete from train_list where user_id=#{arg0} and tr_id=#{arg1}
+    </delete>
+    <!--删除某个部门的所有培训-->
+    <delete id="deleteTrainsOfDept" parameterType="int">
+        delete from train_list where dept_id=#{deptId}
+    </delete>
+    <!--删除某个部门的某个培训-->
+    <delete id="deleteTrainOfDept" parameterType="int">
+        delete from train_list where dept_id=#{arg0} and tr_id=#{arg1}
+    </delete>
+    <!-- 修改某条培训 -->
+    <update id="updateTrainList" parameterType="TrainList">
+        update train_list set tr_id=#{trId},dept_id=#{deptId},user_id=#{userId} where trl_id=#{trlId}
+    </update>
+    <!-- 查询单个培训 -->
+    <select id="queryTrainById" resultType="Train">
+        select  <include refid="trl_column"></include> from train_list where tr_id=#{arg0}
+    </select>
+    <!--查询所有培训-->
+    <select id="queryAllTrainLi" resultMap="trainListMap">
+        select  <include refid="trl_column"></include> from train_list
+    </select>
+    <!--查询项目所有培训-->
+    <select id="queryTrainliByTrId" resultMap="trainListMap">
+        select  <include refid="trl_column"></include> from train_list where tr_id=#{arg0}
+    </select>
+    <!-- 添加培训信息 -->
+
+    <!-- 注册同名验证 -->
+    <!--<select id="queryUserByName" resultType="User">-->
+        <!--select * from user where u_name=#{param1}-->
+    <!--</select>-->
+    <!--&lt;!&ndash;通过职位id查用户&ndash;&gt;-->
+    <!--<select id="queryUserByPstId" resultMap="userMap">-->
+        <!--select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.pst_id=#{arg0}-->
+    <!--</select>-->
+    <resultMap id="trainListMap" type="TrainList">
+        <!--<association property="train" javaType="Train" column="tr_id" select="com.dao.TrainDao.queryTrainById"/>-->
+    </resultMap>
+    <!--通过用户id查询-->
+    <!--<select id="queryUserByuId" resultType="User">-->
+        <!--select  <include refid="user_column"></include> from user u,department d,`position` p where u.dept_id=d.dept_id and u.pst_id=p.pst_id and  u.user_id=#{arg0}-->
+    <!--</select>-->
+</mapper>
+

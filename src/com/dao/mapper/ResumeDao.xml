@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ResumeDao">
+    <!-- 二级缓存 -->
+    <!-- 回收策略:先进先出  自动刷新时间:60s  最多缓存数量:512  只读 -->
+    <cache  eviction="FIFO" flushInterval="60000" size="512" readOnly=""></cache>
+    <sql id="res_column">
+        user_id,r.pst_id,r.dept_id,info_id,res_name,`name`,sex,birth,age,phone,email,school,
+        record,work_exp,native_place,poli_status,hobbies,want_pst,ability,self_asst,
+        want_sal,gradu_date,major,submit,sub_time,looked,looked_time,invited,invt_time,accpet,accpet_time,itview_time
+    </sql>
+    <!--增加简历-->
+    <insert id="addResume" parameterType="Resume">
+        insert into resume (user_id,pst_id,dept_id,info_id,res_name,`name`,sex,birth,age,phone,email,school,
+        record,work_exp,native_place,poli_status,hobbies,want_pst,ability,self_asst,
+        want_sal,gradu_date,major,submit,sub_time,looked,looked_time,invited,invt_time,accpet,accpet_time,itview_time,c_time)
+        values(#{userId},#{pstId},#{deptId},#{infoId},#{resName},#{name},#{sex},#{birth},
+        #{age},#{phone},#{email},#{school},#{record},#{workExp},#{nativePlace},
+        #{poliStatus},#{hobbies},#{wantPst},#{ability},#{selfAsst},#{wantSal},
+        #{graduDate},#{major},#{submit},#{subTime},#{looked},#{lookedTime},
+        #{invited},#{invtTime},#{accpet},#{accpetTime},#{itviewTime},#{cTime})
+    </insert>
+    <!--删除简历-->
+    <delete id="deleteResume" parameterType="int">
+        delete from resume where res_id=#{resId}
+    </delete>
+    <!-- 修改简历信息 -->
+    <update id="updateResume" parameterType="Resume">
+        update resume set pst_id=#{pstId},dept_id=#{deptId},info_id=#{infoId},res_name=#{resName},`name`=#{name},sex=#{sex},
+        birth=#{birth},age=#{age},phone=#{phone},email=#{email},school=#{school},record=#{record},work_exp=#{workExp},
+        native_place=#{nativePlace},poli_status=#{poliStatus},hobbies=#{hobbies},want_pst=#{wantPst},ability=#{ability},self_asst=#{selfAsst},
+        want_sal=#{wantSal},u_time=#{uTime},gradu_date=#{graduDate},major=#{major},submit=#{submit},sub_time=#{subTime},
+        looked=#{looked},looked_time=#{lookedTime},invited=#{invited},invt_time=#{invtTime},accpet=#{accpet},accpet_time=#{accpetTime},
+        itview_time=#{itviewTime}
+         where res_id=#{resId}
+    </update>
+    <!--&lt;!&ndash; 通过id查询简历信息 &ndash;&gt;-->
+    <!--<select id="queryPstById" parameterType="int" resultMap="pstMap">-->
+        <!--select pst_id, <include refid="pst_column"/> from `position` where pst_id=#{pstId}-->
+    <!--</select>-->
+
+    <!-- 通过用户id查询所有简历信息 -->
+    <select id="queryResumesByUid"  resultMap="resumeMap">
+        select res_id, <include refid="res_column"/>,r.c_time,r.u_time,d.dept_name,p.pst_name from resume r,department d,`position` p
+        where r.dept_id=d.dept_id and r.pst_id=p.pst_id and user_id=#{arg0}
+    </select>
+
+    <select id="queryResumesByPage"  resultMap="resumeMap">
+        select * from resume r where  user_id=#{arg0} limit #{arg1},#{arg2}
+    </select>
+
+    <resultMap id="resumeMap" type="Resume"></resultMap>
+    <!--通过状态查简历-->
+    <select id="queryResumesBySubmit" parameterType="int" resultMap="resumeMap">
+        select res_id, <include refid="res_column"/>,r.c_time,r.u_time,d.dept_name,p.pst_name from resume r,department d,`position` p
+        where r.dept_id=d.dept_id and r.pst_id=p.pst_id and submit=#{submit} order by u_time;
+    </select>
+    <!--通过id查简历-->
+    <select id="queryResById"  resultType="Resume">
+        select res_id, <include refid="res_column"/>,r.c_time,r.u_time,d.dept_name,p.pst_name from resume r,department d,`position` p
+        where r.dept_id=d.dept_id and r.pst_id=p.pst_id and res_id=#{arg0}
+    </select>
+</mapper>

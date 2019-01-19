@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
+
+<!--扫描-->
+    <context:component-scan base-package="com"></context:component-scan>
+    <!--springMVC-->
+    <!--配置驱动-->
+    <mvc:annotation-driven conversion-service="conversionFactoryBean">
+        <!-- 处理请求返回json字符串的中文乱码问题 -->
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+
+                        <value>application/json;charset=UTF-8</value>
+
+                        <value>text/plain;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <!--配置拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**/*.action"/>
+            <bean class="com.servlet.LoginInterceptor">
+                <property name="excludeUrls">
+                    <list>
+                        <value>login.action</value>
+                        <value>logout.action</value>
+                        <value>goRegist.action</value>
+                        <value>regist.action</value>
+                        <value>checkName.action</value>
+                        <value>takeCode.action</value>
+                        <value>sendRes.action</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    <!-- DispatcherServlet放行静态资源（jpg,js,css...） -->
+    <mvc:default-servlet-handler/>
+    <!--配置时间格式-->
+    <bean id="conversionFactoryBean" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="com.common.DateConvert"></bean>
+            </set>
+        </property>
+    </bean>
+    <!-- 针对返回的jsp文件，自动添加前缀和后缀 -->
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix">
+            <value>/WEB-INF/jsp/</value>
+        </property>
+        <property name="suffix">
+            <value>.jsp</value>
+        </property>
+    </bean>
+    <!--mybatis-->
+    <!-- c3p0连接池 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/hr_system"></property>
+        <property name="user" value="root"></property>
+        <property name="password" value="123456"></property>
+        <property name="acquireIncrement" value="5"></property>
+        <property name="initialPoolSize" value="10"></property>
+        <property name="minPoolSize" value="5"></property>
+        <property name="maxPoolSize" value="100"></property>
+        <property name="maxStatements" value="10"></property>
+        <property name="maxStatementsPerConnection" value="15"></property>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 关联数据库 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 对实体类起一个别名 -->
+        <property name="typeAliasesPackage" value="com.bean"></property>
+        <!-- 加载dao对应的mapper配置文件 -->
+        <property name="mapperLocations" value="classpath*:com/dao/mapper/*.xml"></property>
+        <!-- 开启驼峰命名转换 -->
+        <property name="configuration">
+            <bean class="org.apache.ibatis.session.Configuration">
+                <property name="mapUnderscoreToCamelCase" value="true"></property>
+            </bean>
+        </property>
+    </bean>
+    <!-- 扫描DAO层里的接口 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.dao"></property>
+    </bean>
+
+    <!-- 关联数据库 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!-- 配置事务 -->
+    <tx:advice id="txdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!-- <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/> -->
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!-- 默认:false,基于jdk的动态代理(需要接口) -->
+    <aop:config proxy-target-class="false">
+        <aop:advisor advice-ref="txdvice" pointcut="execution(* com.service.impl.*.*(..))"/>
+    </aop:config>
+</beans>
